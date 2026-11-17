@@ -5,11 +5,148 @@ import {
   Route,
   Navigate,
   Link,
+  useNavigate,
 } from "react-router-dom";
-import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Catalogo from "./pages/Catalogo";
 import Inventario from "./pages/Inventario";
+
+function Navbar({ user, setUser }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("usuarioHeladeria");
+    setUser(null);
+    navigate("/login");
+  };
+
+  return (
+    <nav
+      className="navbar navbar-expand-lg navbar-dark px-4"
+      style={{
+        background: "rgba(15, 23, 42, 0.95)",
+        borderBottom: "1px solid rgba(56, 189, 248, 0.2)",
+      }}
+    >
+      <div className="container-fluid">
+        <Link className="navbar-brand fw-bold text-info" to="/">
+          Heladería Glacialis
+        </Link>
+        <div className="collapse navbar-collapse justify-content-end">
+          {user ? (
+            <ul className="navbar-nav align-items-center gap-3">
+              <li className="nav-item">
+                <Link className="nav-link text-light" to="/catalogo">
+                  Catálogo
+                </Link>
+              </li>
+              {user.rol === "admin" && (
+                <li className="nav-item">
+                  <Link className="nav-link text-light" to="/inventario">
+                    Inventario
+                  </Link>
+                </li>
+              )}
+              <li className="nav-item">
+                <span className="badge bg-info text-dark px-3 py-2">
+                  {user.nombre} ({user.rol})
+                </span>
+              </li>
+              <li className="nav-item">
+                <button
+                  onClick={handleLogout}
+                  className="btn btn-outline-danger btn-sm rounded-pill px-3"
+                >
+                  Cerrar Sesión
+                </button>
+              </li>
+            </ul>
+          ) : (
+            <Link
+              className="btn btn-info btn-sm rounded-pill px-4 text-dark fw-bold"
+              to="/login"
+            >
+              Iniciar Sesión
+            </Link>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+function Home({ user }) {
+  return (
+    <div
+      className="container text-center py-5"
+      style={{
+        minHeight: "80vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <div className="display-4 mb-3">🍨</div>
+      <h1 className="fw-bold text-info display-5 mb-3">Glacialis Core</h1>
+      <p className="text-light opacity-75 mb-4" style={{ maxWidth: "600px" }}>
+        Sistema inteligente de gestión de inventarios, control de roles y
+        operaciones para heladerías de alta gama.
+      </p>
+
+      {/* Seguridad estricta en la vista de inicio */}
+      {user ? (
+        <div
+          className="card shadow-lg p-4 rounded-4 border-0"
+          style={{
+            background: "rgba(15, 23, 42, 0.85)",
+            border: "1px solid rgba(56, 189, 248, 0.3)",
+          }}
+        >
+          <p className="text-light mb-3">
+            🚀 Sesión activa como:{" "}
+            <strong className="text-info">{user.nombre}</strong>{" "}
+            <span className="badge bg-info text-dark">{user.rol}</span>
+          </p>
+          <div className="d-flex gap-3 justify-content-center">
+            <Link
+              to="/catalogo"
+              className="btn btn-info rounded-pill px-4 fw-bold text-dark"
+            >
+              Explorar Catálogo
+            </Link>
+            {user.rol === "admin" && (
+              <Link
+                to="/inventario"
+                className="btn btn-outline-info rounded-pill px-4 fw-bold"
+              >
+                Panel de Inventario
+              </Link>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div
+          className="card shadow-lg p-4 rounded-4 border-0"
+          style={{
+            background: "rgba(15, 23, 42, 0.85)",
+            border: "1px solid rgba(56, 189, 248, 0.3)",
+          }}
+        >
+          <p className="text-light mb-3">
+            🔒 Área restringida. Debe iniciar sesión para acceder al sistema.
+          </p>
+          <Link
+            to="/login"
+            className="btn btn-info btn-lg rounded-pill px-5 fw-bold text-dark shadow-lg"
+          >
+            Acceder al Sistema
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -21,164 +158,29 @@ export default function App() {
     }
   }, []);
 
-  // Componente para proteger rutas privadas
-  const ProtectedRoute = ({ children, allowedRoles }) => {
-    if (!user) {
-      return <Navigate to="/login" replace />;
-    }
-    if (allowedRoles && !allowedRoles.includes(user.rol)) {
-      return <Navigate to="/" replace />;
-    }
-    return children;
-  };
-
   return (
     <Router>
       <div
-        style={{
-          minHeight: "100vh",
-          backgroundColor: "#0b0f19",
-          color: "#f8f9fa",
-        }}
+        style={{ minHeight: "100vh", background: "#0b0f19", color: "#f8fafc" }}
       >
         <Navbar user={user} setUser={setUser} />
         <Routes>
-          <Route
-            path="/"
-            element={
-              <div className="container py-5">
-                <div
-                  className="p-5 mb-4 rounded-4 shadow-lg text-center position-relative overflow-hidden"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%)",
-                    border: "1px solid rgba(56, 189, 248, 0.3)",
-                    backdropFilter: "blur(12px)",
-                    boxShadow: "0 0 40px rgba(14, 165, 233, 0.15)",
-                  }}
-                >
-                  <div
-                    className="position-absolute top-0 start-50 translate-middle-x"
-                    style={{
-                      width: "300px",
-                      height: "100px",
-                      background: "rgba(56, 189, 248, 0.15)",
-                      filter: "blur(60px)",
-                      borderRadius: "50%",
-                    }}
-                  ></div>
-
-                  <h1
-                    className="display-3 fw-bold mb-3"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, #38bdf8, #818cf8, #c084fc)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                    }}
-                  >
-                    🍦 Glacialis Core V2
-                  </h1>
-                  <p
-                    className="lead text-light opacity-75 mb-4"
-                    style={{ maxWidth: "600px", margin: "0 auto" }}
-                  >
-                    Sistema inteligente de gestión de inventarios, control de
-                    roles y operaciones cuánticas para heladerías de alta gama.
-                  </p>
-
-                  {user ? (
-                    <div
-                      className="alert d-inline-block px-4 py-3 rounded-pill text-light mb-4"
-                      style={{
-                        background: "rgba(56, 189, 248, 0.1)",
-                        border: "1px solid rgba(56, 189, 248, 0.3)",
-                      }}
-                    >
-                      ✨ Sesión activa como:{" "}
-                      <strong className="text-info">{user.nombre}</strong>{" "}
-                      <span className="badge bg-info text-dark ms-2">
-                        {user.rol}
-                      </span>
-                    </div>
-                  ) : (
-                    <div
-                      className="alert d-inline-block px-4 py-2 rounded-pill text-warning mb-4"
-                      style={{
-                        background: "rgba(234, 179, 8, 0.1)",
-                        border: "1px solid rgba(234, 179, 8, 0.3)",
-                      }}
-                    >
-                      🔒 Acceso restringido. Por favor inicia sesión para
-                      habilitar los módulos.
-                    </div>
-                  )}
-
-                  <div className="d-flex justify-content-center gap-3 flex-wrap mt-3">
-                    <Link
-                      to="/catalogo"
-                      className="btn btn-info fw-bold px-4 py-3 shadow-sm text-dark rounded-pill"
-                      style={{
-                        background: "linear-gradient(135deg, #38bdf8, #0ea5e9)",
-                        border: "none",
-                      }}
-                    >
-                      🚀 Explorar Catálogo
-                    </Link>
-
-                    {user &&
-                    (user.rol === "admin" || user.rol === "empleado") ? (
-                      <Link
-                        to="/inventario"
-                        className="btn btn-outline-info fw-bold px-4 py-3 rounded-pill"
-                        style={{ borderColor: "#38bdf8", color: "#38bdf8" }}
-                      >
-                        📦 Panel de Inventario
-                      </Link>
-                    ) : (
-                      <button
-                        className="btn btn-outline-secondary fw-bold px-4 py-3 rounded-pill disabled"
-                        style={{ opacity: 0.5 }}
-                      >
-                        🔒 Inventario (Bloqueado)
-                      </button>
-                    )}
-
-                    {!user && (
-                      <Link
-                        to="/login"
-                        className="btn btn-warning fw-bold px-4 py-3 rounded-pill text-dark shadow-sm"
-                      >
-                        🔑 Iniciar Sesión
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            }
-          />
-
+          <Route path="/" element={<Home user={user} />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
-
           <Route
             path="/catalogo"
-            element={
-              <ProtectedRoute>
-                <Catalogo />
-              </ProtectedRoute>
-            }
+            element={user ? <Catalogo /> : <Navigate to="/login" replace />}
           />
-
           <Route
             path="/inventario"
             element={
-              <ProtectedRoute allowedRoles={["admin", "empleado"]}>
+              user && user.rol === "admin" ? (
                 <Inventario />
-              </ProtectedRoute>
+              ) : (
+                <Navigate to="/" replace />
+              )
             }
           />
-
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>
