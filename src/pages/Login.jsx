@@ -12,7 +12,7 @@ export default function Login({ setUser }) {
     e.preventDefault();
     setError("");
 
-    // Acceso directo de respaldo para el administrador (ideal para entrega)
+    // Acceso directo de respaldo para el administrador y el cliente
     if (email === "admin@admin.co") {
       const adminUser = {
         nombre: "Administrador",
@@ -25,9 +25,35 @@ export default function Login({ setUser }) {
       return;
     }
 
+    // Acceso de respaldo rápido para cliente
+    if (email === "cliente@cliente.co") {
+      const clienteUser = {
+        nombre: "Cliente",
+        correo: email,
+        rol: "cliente",
+      };
+      localStorage.setItem("usuarioHeladeria", JSON.stringify(clienteUser));
+      setUser(clienteUser);
+      navigate("/");
+      return;
+    }
+
+    // Acceso de respaldo rápido para empleado
+    if (email === "empleado@empleado.co") {
+      const empleadoUser = {
+        nombre: "Empleado",
+        correo: email,
+        rol: "empleado",
+      };
+      localStorage.setItem("usuarioHeladeria", JSON.stringify(empleadoUser));
+      setUser(empleadoUser);
+      navigate("/");
+      return;
+    }
+
     try {
       const { data, err } = await supabase
-        .from("usuarios")
+        .from("usuarios") // Asegúrate de que tu tabla se llame usuarios o profiles
         .select("*")
         .eq("correo", email)
         .single();

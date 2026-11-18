@@ -102,7 +102,7 @@ export default function Inventario() {
         <h2 className="fw-bold text-info">
           🧪 Control de Inventario e Ingredientes
         </h2>
-        <p className="text-muted">
+        <p className="text-light">
           Administración y control de bases, complementos y stock
         </p>
       </div>
